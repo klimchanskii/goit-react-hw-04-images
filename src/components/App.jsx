@@ -80,7 +80,7 @@ return response.data
           'There is no images found with this search request'
         );
       }
-      setData([...data, ...arr.hits])
+      setData(prevState => [...prevState, ...arr.hits])
       setStatus('resolve')
       setTotalHits(arr.totalHits)
      
