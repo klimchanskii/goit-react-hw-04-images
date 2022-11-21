@@ -4,12 +4,12 @@ import { Gallery } from "./ImageGallery/ImageGallery";
 import { Button } from './Button/Button'
 import { Modal } from "./Modal/Modal";
 import { Loader } from './Loader/Loader'
-import { appService } from './Api'
-// import axios from "axios";
+// import { appService } from './Api'
+import axios from "axios";
 export const App = () => {
 
   const [search, setSearch] = useState('');
-  const [prevSearch,setPrevSearch] = useState('')
+
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
@@ -17,15 +17,62 @@ export const App = () => {
   const [status, setStatus] = useState("idle");
   const [totalHits, setTotalHits] = useState(null);
   
-  useEffect(() => {
-    console.log(prevSearch);
+  // useEffect(() => {
+  //   if (search === '') {
+  //     setTotalHits(0)
+  //     return
+  //   }
+  //   setStatus("pending")
+  //   appService(search, page).then(arr => {
 
-    if (search === '' && prevSearch === search) {
-      setTotalHits(0)
+  //     if (!arr.hits.length) {
+  //       setData([])
+  //       return alert(
+  //         'There is no images found with this search request'
+  //       );
+  //     }
+
+  //     setData([...data, ...arr.hits])
+  //     setStatus('resolve')
+  //     setTotalHits(arr.totalHits)
+
+ 
+   
+     
+  //   })
+
+  //  },[search, page])
+
+
+  useEffect(() => {
+    if (search === '') {
       return
     }
+    const controller = new AbortController()
     setStatus("pending")
-    appService(search, page).then(arr => {
+    const appService = async () => {
+      axios.defaults.baseURL = 'https://pixabay.com/api';
+try {
+  const response = await axios.get( `/`,{
+    params: {
+          signal:controller.signal,
+          key:process.env.REACT_APP_API_KEY,
+          q: `${search}`,
+          page: `${page}`,
+          image_type: "photo",
+          orientation: "horizontal",
+          per_page: 12
+       }
+     })
+
+return response.data
+
+} catch (error) {
+  console.log(error.message);
+}
+    }
+    
+    appService().then(arr => {
 
       if (!arr.hits.length) {
         setData({ data: [] })
@@ -36,60 +83,14 @@ export const App = () => {
       setData([...data, ...arr.hits])
       setStatus('resolve')
       setTotalHits(arr.totalHits)
-      setPrevSearch(search)
      
     })
+    
+    return () => {
+      controller.abort()
+    }
 
    },[search,page])
-
-
-//   useEffect(() => {
-//     if (search === '') {
-//       return
-//     }
-//     const controller = new AbortController()
-//     setStatus("pending")
-//     const appService = async () => {
-//       axios.defaults.baseURL = 'https://pixabay.com/api';
-// try {
-//   const response = await axios.get( `/`,{
-//     params: {
-//           signal:controller.signal,
-//           key:process.env.REACT_APP_API_KEY,
-//           q: `${search}`,
-//           page: `${page}`,
-//           image_type: "photo",
-//           orientation: "horizontal",
-//           per_page: 12
-//        }
-//      })
-
-// return response.data
-
-// } catch (error) {
-//   console.log(error.message);
-// }
-//     }
-    
-//     appService().then(arr => {
-
-//       if (!arr.hits.length) {
-//         setData({ data: [] })
-//         return alert(
-//           'There is no images found with this search request'
-//         );
-//       }
-//       setData([...data, ...arr.hits])
-//       setStatus('resolve')
-//       setTotalHits(arr.totalHits)
-     
-//     })
-    
-//     return () => {
-//       controller.abort()
-//     }
-
-//    },[search,page])
   
   
   
