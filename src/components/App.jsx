@@ -4,8 +4,8 @@ import { Gallery } from "./ImageGallery/ImageGallery";
 import { Button } from './Button/Button'
 import { Modal } from "./Modal/Modal";
 import { Loader } from './Loader/Loader'
-// import { appService } from './Api'
-import axios from "axios";
+import { appService } from './Api'
+
 export const App = () => {
 
   const [search, setSearch] = useState('');
@@ -14,87 +14,37 @@ export const App = () => {
   const [page, setPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [modalImage, setModalImage] = useState('');
-  const [status, setStatus] = useState("idle");
+  const [status, setStatus] = useState("resolve");
   const [totalHits, setTotalHits] = useState(null);
   
-  // useEffect(() => {
-  //   if (search === '') {
-  //     setTotalHits(0)
-  //     return
-  //   }
-  //   setStatus("pending")
-  //   appService(search, page).then(arr => {
-
-  //     if (!arr.hits.length) {
-  //       setData([])
-  //       return alert(
-  //         'There is no images found with this search request'
-  //       );
-  //     }
-
-  //     setData([...data, ...arr.hits])
-  //     setStatus('resolve')
-  //     setTotalHits(arr.totalHits)
-
- 
-   
-     
-  //   })
-
-  //  },[search, page])
-
-
   useEffect(() => {
     if (search === '') {
+      setTotalHits(0)
       return
     }
-    const controller = new AbortController()
-    setStatus("pending")
-    const appService = async () => {
-      axios.defaults.baseURL = 'https://pixabay.com/api';
-try {
-  const response = await axios.get( `/`,{
-    params: {
-          signal:controller.signal,
-          key:process.env.REACT_APP_API_KEY,
-          q: `${search}`,
-          page: `${page}`,
-          image_type: "photo",
-          orientation: "horizontal",
-          per_page: 12
-       }
-     })
 
-return response.data
-
-} catch (error) {
-  console.log(error.message);
-}
-    }
-    
-    appService().then(arr => {
+    appService(search, page).then(arr => {
 
       if (!arr.hits.length) {
-        setData({ data: [] })
+        setData([])
         return alert(
           'There is no images found with this search request'
         );
       }
+
       setData(prevState => [...prevState, ...arr.hits])
       setStatus('resolve')
       setTotalHits(arr.totalHits)
+
+ 
+   
      
     })
-    
-    return () => {
-      controller.abort()
-    }
 
-   },[search,page])
-  
-  
+   },[search, page])  
   
   const handelFormSubmit = (search) => {
+    setStatus("pending")
     setSearch(search)
     setData([])
     setPage(1)
@@ -137,10 +87,10 @@ return response.data
        {showModal && <Modal image={modalImage} closeModal={closeModal} />}
        </>
      }
-    if (status === 'idle') {
+    // if (status === 'idle') {
       
-    return  <Searchbar onSubmit={handelFormSubmit} />
-    }
+    // return  <Searchbar onSubmit={handelFormSubmit} />
+    // }
 
 
 }
